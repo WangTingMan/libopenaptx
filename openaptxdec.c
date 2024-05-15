@@ -149,7 +149,8 @@ int main(int argc, char *argv[])
         }
 
         /* If we have not decoded all supplied samples then decoding unrecoverable failed */
-        if (processed != length) {
+        if (processed != length)
+        {
             fprintf(stderr, "%s: aptX decoding failed\n", argv[0]);
             ret = 1;
             break;

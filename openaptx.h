@@ -26,6 +26,23 @@
 #define OPENAPTX_MINOR 2
 #define OPENAPTX_PATCH 1
 
+#if defined(WIN32) || defined(_MSC_VER)
+
+#if defined(LIBAPTX_EXPORTS)
+#define APTX_EXPORT __declspec(dllexport)
+#else
+#define APTX_EXPORT __declspec(dllimport)
+#endif  // defined(LIBAPTX_EXPORTS)
+
+#else  // defined(WIN32)
+#if defined(LIBAPTX_EXPORTS)
+#define APTX_EXPORT __attribute__((visibility("default")))
+#else
+#define APTX_EXPORT
+#endif  // defined(LIBAPTX_EXPORTS)
+#endif
+
+
 #include <stddef.h>
 
 extern const int aptx_major;
@@ -34,23 +51,27 @@ extern const int aptx_patch;
 
 struct aptx_context;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Initialize context for aptX codec and reset it.
  * hd = 0 process aptX codec
  * hd = 1 process aptX HD codec
  */
-struct aptx_context *aptx_init(int hd);
+APTX_EXPORT struct aptx_context *aptx_init(int hd);
 
 /*
  * Reset internal state, predictor and parity sync of aptX context.
  * It is needed when going to encode or decode a new stream.
  */
-void aptx_reset(struct aptx_context *ctx);
+APTX_EXPORT void aptx_reset(struct aptx_context *ctx);
 
 /*
  * Free aptX context initialized by aptx_init().
  */
-void aptx_finish(struct aptx_context *ctx);
+APTX_EXPORT void aptx_finish(struct aptx_context *ctx);
 
 /*
  * Encodes sequence of 4 raw 24bit signed stereo samples from input buffer with
@@ -62,7 +83,7 @@ void aptx_finish(struct aptx_context *ctx);
  * encoded sequence of either four bytes (LLRR) of aptX or six bytes (LLLRRR)
  * of aptX HD.
  */
-size_t aptx_encode(struct aptx_context *ctx,
+APTX_EXPORT size_t aptx_encode(struct aptx_context *ctx,
                    const unsigned char *input,
                    size_t input_size,
                    unsigned char *output,
@@ -78,7 +99,7 @@ size_t aptx_encode(struct aptx_context *ctx,
  * When output buffer is large enough, then function returns non-zero value.
  * In both cases into written pointer is stored length of encoded samples.
  */
-int aptx_encode_finish(struct aptx_context *ctx,
+APTX_EXPORT int aptx_encode_finish(struct aptx_context *ctx,
                        unsigned char *output,
                        size_t output_size,
                        size_t *written);
@@ -100,7 +121,7 @@ int aptx_encode_finish(struct aptx_context *ctx,
  * samples are rounded to the multiple by four and latency is 90 samples so
  * last 2 samples are just padding.
  */
-size_t aptx_decode(struct aptx_context *ctx,
+APTX_EXPORT size_t aptx_decode(struct aptx_context *ctx,
                    const unsigned char *input,
                    size_t input_size,
                    unsigned char *output,
@@ -124,7 +145,7 @@ size_t aptx_decode(struct aptx_context *ctx,
  * already processed. Functions aptx_decode() and aptx_decode_sync() should not
  * be mixed together.
  */
-size_t aptx_decode_sync(struct aptx_context *ctx,
+APTX_EXPORT size_t aptx_decode_sync(struct aptx_context *ctx,
                         const unsigned char *input,
                         size_t input_size,
                         unsigned char *output,
@@ -140,6 +161,10 @@ size_t aptx_decode_sync(struct aptx_context *ctx,
  * by next aptx_decode_sync() call, therefore in time of calling this function
  * it is number of dropped input bytes.
  */
-size_t aptx_decode_sync_finish(struct aptx_context *ctx);
+APTX_EXPORT size_t aptx_decode_sync_finish(struct aptx_context *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
